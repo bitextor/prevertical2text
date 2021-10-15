@@ -7,7 +7,7 @@
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include "src/html.hh"
+#include "src/preverticalpreprocessor.hh"
 
 using namespace prevertical2text;
 
@@ -17,8 +17,6 @@ struct Options {
     bool verbose{};
     bool silent{};
     std::string output;
-    std::string url_filters_filename;
-    bool encodeURLs{};
 };
 
 void parseArgs(int argc, char *argv[], Options& out) {
@@ -29,10 +27,8 @@ void parseArgs(int argc, char *argv[], Options& out) {
         ("output,o", po::value(&out.output)->default_value("."), "Output folder")
         ("files,f", po::value(&out.files)->default_value("url,token"), "List of output files separated by commas. Default (mandatory files): 'url,text'. Optional: 'mime,html'")
         ("input,i", po::value(&out.preverticals)->multitoken(), "Input Spiderling prevertical file name(s)")
-        ("url-filters", po::value(&out.url_filters_filename), "Plain text file containing url filters")
         ("verbose,v", po::bool_switch(&out.verbose)->default_value(false), "Verbosity level")
-        ("silent,s", po::bool_switch(&out.silent)->default_value(false))
-        ("encode-urls", po::bool_switch(&out.encodeURLs)->default_value(false), "Encode URLs obtained from prevertical");
+        ("silent,s", po::bool_switch(&out.silent)->default_value(false));
 
     po::positional_options_description pd;
     pd.add("input", -1);
@@ -47,9 +43,6 @@ void parseArgs(int argc, char *argv[], Options& out) {
                 " -f <output_files>                List of output files separated by commas\n"
                 "                                  Default (mandatory): \"url,text\"\n"
                 "                                  Optional values: \"mime,html\"\n"
-                " --url-filters <filters_file>     File containing url filters\n"
-                "                                  Format: \"regexp\"\n"
-                " --encode-urls                    Encode URLs obtained from WARC records\n"
                 " -s                               Only output errors\n"
                 " -v                               Verbose output (print trace)\n\n";
         exit(1);
@@ -77,9 +70,17 @@ int main(int argc, char *argv[]) {
     std::unordered_set<std::string> output_files(files_list.begin(), files_list.end());
 
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    preverticalPreprocessor preverticalpproc(options.output, output_files);
     for (const std::string& file : options.preverticals){
-        processHTML(file, options.output, options.files);
+        preverticalpproc.process(file);
     }
+    preverticalpproc.printStatistics();
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    unsigned int hours = std::chrono::duration_cast<std::chrono::hours>(end - start).count();
+    unsigned int minutes = std::chrono::duration_cast<std::chrono::minutes>(end - start).count() - hours*60;
+    unsigned int seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count() - hours*60*60 - minutes*60;
+    BOOST_LOG_TRIVIAL(info) << "elapsed: " << hours << "h" << minutes << "m" << seconds << "s";
 
     return 0;
 }

@@ -11,7 +11,7 @@ include_directories(
 )
 
 add_library(prevertical2text_lib
-        html.cc
+        preverticalpreprocessor.cc
         bilangwriter.cc
     xh_scanner.cc
     entities.cc

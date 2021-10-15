@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <utility>
 #include "zlib.h"
+#include <string>
 
 namespace prevertical2text {
 
@@ -38,19 +39,21 @@ namespace prevertical2text {
 
 
         public:
-            explicit BilangWriter(std::string  folder) :
+            explicit BilangWriter(std::string folder) :
                 folder(std::move(folder)),
                 url_files(),
                 mime_files(),
                 text_files(),
+                html_files(),
                 output_files({}) // url and text are mandatory regardless
             {};
 
-            explicit BilangWriter(std::string  folder, std::unordered_set<std::string>  output_files) :
+            explicit BilangWriter(std::string folder, std::unordered_set<std::string>  output_files) :
                 folder(std::move(folder)),
                 url_files(),
                 mime_files(),
                 text_files(),
+                html_files(),
                 output_files(std::move(output_files))
             {};
             void write(const std::string& lang, const std::string& b64text, const std::string& url, const std::string& mime, const std::string& b64html);
