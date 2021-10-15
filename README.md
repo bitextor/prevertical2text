@@ -28,13 +28,9 @@ prevertical2text -o <output_folder> [ -f <output_files> ] <prevertical_file>...
 ```
 * `--output`/`-o` output folder
 * `--files`/`-f` list of output files separated by commas (and without `.gz`); `text` and `url` are always written, while `mime` and `html` are optional
-* `--url-filters` file containing regular expressions that match urls of documents to eliminate
 * `--verbose`/`-v` print progress and filtering information
 * `--silent`/`-s` print only warnings and errors
 
-  URL Filter format is a single regular expression per line.
-
-  Lines beginning with `#` and empty lines are ignored. Any invalid filter will raise a warning message, but will not prevent other filters from being read.
 
 ## Included dependencies
 HTML Tokenizer by [c-smile](https://www.codeproject.com/Articles/14076/Fast-and-Compact-HTML-XML-Scanner-Tokenizer)
