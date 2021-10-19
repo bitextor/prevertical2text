@@ -68,7 +68,7 @@ namespace prevertical2text {
                 else if (attr == "url"){
                     url = sc.get_value();
                 }
-                else if (attr == "enc_chared"){
+                else if (attr == "file_type"){
                     mime = sc.get_value();
                 }
             }
