@@ -13,6 +13,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Ofast")
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif ()
+add_definitions(-DBOOST_LOG_DYN_LINK)
 
 find_package(Boost 1.71 COMPONENTS program_options log log_setup REQUIRED)
 
