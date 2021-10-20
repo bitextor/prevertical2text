@@ -14,6 +14,7 @@ using namespace prevertical2text;
 struct Options {
     std::vector<std::string> preverticals;
     std::string files;
+    bool boilerplate{};
     bool verbose{};
     bool silent{};
     std::string output;
@@ -27,6 +28,7 @@ void parseArgs(int argc, char *argv[], Options& out) {
         ("output,o", po::value(&out.output)->default_value("."), "Output folder")
         ("files,f", po::value(&out.files)->default_value("url,token"), "List of output files separated by commas. Default (mandatory files): 'url,text'. Optional: 'mime,html'")
         ("input,i", po::value(&out.preverticals)->multitoken(), "Input Spiderling prevertical file name(s)")
+        ("remove_boilerplate,b", po::bool_switch(&out.boilerplate)->default_value(false), "Remove boilerplate paragraphs from prevertical format, tagged as 'bad'")
         ("verbose,v", po::bool_switch(&out.verbose)->default_value(false), "Verbosity level")
         ("silent,s", po::bool_switch(&out.silent)->default_value(false));
 
@@ -72,7 +74,7 @@ int main(int argc, char *argv[]) {
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     preverticalPreprocessor preverticalpproc(options.output, output_files);
     for (const std::string& file : options.preverticals){
-        preverticalpproc.process(file);
+        preverticalpproc.process(file, options.boilerplate);
     }
     preverticalpproc.printStatistics();
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

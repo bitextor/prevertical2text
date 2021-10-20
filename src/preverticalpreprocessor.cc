@@ -11,6 +11,13 @@ namespace prevertical2text {
             plaintext.push_back(' ');
         }
     }
+    void addNewLine(std::string& plaintext) {
+        if (std::isspace(plaintext.back())) {
+            plaintext.back() = '\n';
+        } else if (!plaintext.empty()) {
+            plaintext.push_back('\n');
+        }
+    }
 
     std::string fileToStr(const std::string& filename){
         std::ifstream t(filename);
@@ -26,11 +33,12 @@ namespace prevertical2text {
         preprocess::base64_encode(original, base64);
     }
 
-    void preverticalPreprocessor::process(const std::string& filename){
+    void preverticalPreprocessor::process(const std::string& filename, bool boilerplate_removal){
         std::string plaintext;
         std::string lang;
         std::string url;
         std::string mime;
+        int paragraph_class = 0;
         const std::string allxml = fileToStr(filename);
         markup::instream si(allxml.c_str());
         markup::scanner sc(si);
@@ -38,16 +46,27 @@ namespace prevertical2text {
 
 
         int t = markup::scanner::TT_SPACE; // just start somewhere that isn't ERROR or EOF
+        std::string tag;
+        std::string attr;
+        std::string value;
 
         while (t != markup::scanner::TT_EOF) {
             t = sc.get_token();
+            tag = std::string(sc.get_tag_name());
+            attr = std::string(sc.get_attr_name());
+            value = std::string(sc.get_value());
             switch (t) {
                 case markup::scanner::TT_ERROR:
                     BOOST_LOG_TRIVIAL(trace) << "Prevertical document " << url << ": parsing error";
                     return;
-                case markup::scanner::TT_TAG_START:
+                case markup::scanner::TT_ATTR:
+                    if (boilerplate_removal and tag == "p" and attr == "class" and value == "bad") paragraph_class = 1;
+                    else if (boilerplate_removal and tag == "p" and attr == "class" and value == "good") paragraph_class = 0;
+                    break;
+                case markup::scanner::TT_TAG_END:
+                    if (tag == "p") addNewLine(plaintext);
                 case markup::scanner::TT_WORD:
-                    plaintext.append(sc.get_value());
+                    if (paragraph_class == 0) plaintext.append(value);
                     break;
                 case markup::scanner::TT_SPACE:
                     addSpace(plaintext);
@@ -55,21 +74,20 @@ namespace prevertical2text {
                 default:
                     break;
             }
-            std::string tag = std::string(sc.get_tag_name());
+
             if (t == markup::scanner::TT_TAG_START and tag == "doc"){
                 ++totalRecords;
             }
             // Look for the attributes of the doc tag and store them as prevertical document metadata
             else if (t == markup::scanner::TT_ATTR and tag == "doc"){
-                std::string attr = std::string(sc.get_attr_name());
                 if (attr == "lang") {
-                    lang = sc.get_value();
+                    lang = value;
                 }
                 else if (attr == "url"){
-                    url = sc.get_value();
+                    url = value;
                 }
                 else if (attr == "file_type"){
-                    mime = sc.get_value();
+                    mime = value;
                 }
             }
             // Look for the </doc> end tag and write the document data
