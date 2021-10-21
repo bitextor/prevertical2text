@@ -65,6 +65,7 @@ namespace prevertical2text {
                     break;
                 case markup::scanner::TT_TAG_END:
                     if (tag == "p") addNewLine(plaintext);
+                    break;
                 case markup::scanner::TT_WORD:
                     if (paragraph_class == 0) plaintext.append(value);
                     break;
