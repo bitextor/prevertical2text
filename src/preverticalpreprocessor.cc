@@ -20,7 +20,9 @@ namespace prevertical2text {
     }
 
     std::string fileToStr(const std::string& filename){
-        std::ifstream t(filename);
+        std::ifstream t;
+        if (filename == "-") t = std::ifstream("/dev/stdin");
+        else t = std::ifstream(filename);
         t.seekg(0, std::ios::end);
         std::streamsize size = t.tellg();
         std::string buffer(size, ' ');
@@ -49,6 +51,7 @@ namespace prevertical2text {
         std::string tag;
         std::string attr;
         std::string value;
+        int paragraph_counter;
 
         while (t != markup::scanner::TT_EOF) {
             t = sc.get_token();
@@ -64,7 +67,12 @@ namespace prevertical2text {
                     else if (boilerplate_removal and tag == "p" and attr == "class" and value == "good") paragraph_class = 0;
                     break;
                 case markup::scanner::TT_TAG_END:
-                    if (tag == "p") addNewLine(plaintext);
+                    if (tag == "p"){
+                        plaintext.push_back('\t');
+                        plaintext.append(std::to_string(paragraph_counter));
+                        paragraph_counter += 1;
+                        addNewLine(plaintext);
+                    }
                     break;
                 case markup::scanner::TT_WORD:
                     if (paragraph_class == 0) plaintext.append(value);
@@ -77,6 +85,7 @@ namespace prevertical2text {
             }
 
             if (t == markup::scanner::TT_TAG_START and tag == "doc"){
+                paragraph_counter = 0;
                 ++totalRecords;
             }
             // Look for the attributes of the doc tag and store them as prevertical document metadata
