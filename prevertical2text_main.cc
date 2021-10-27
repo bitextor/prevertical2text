@@ -45,6 +45,7 @@ void parseArgs(int argc, char *argv[], Options& out) {
                 " -f <output_files>                List of output files separated by commas\n"
                 "                                  Default (mandatory): \"url,text\"\n"
                 "                                  Optional values: \"mime,html\"\n"
+		" -b                               Remove boilerplate paragraphs\n"
                 " -s                               Only output errors\n"
                 " -v                               Verbose output (print trace)\n\n";
         exit(1);
