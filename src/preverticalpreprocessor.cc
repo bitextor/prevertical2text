@@ -12,7 +12,7 @@ namespace prevertical2text {
         }
     }
     void addNewLine(std::string& plaintext) {
-        if (std::isspace(plaintext.back())) {
+        if (!plaintext.empty() and std::isspace(plaintext.back())) {
             plaintext.back() = '\n';
         } else if (!plaintext.empty()) {
             plaintext.push_back('\n');
@@ -61,16 +61,17 @@ namespace prevertical2text {
                         case markup::scanner::TT_ATTR:
                             if (boilerplate_removal and tag == "p" and attr == "class" and value == "bad")
                                 paragraph_class = 1;
-                            else if (boilerplate_removal and tag == "p" and attr == "class" and
-                                     value == "good")
+                            else if (boilerplate_removal and tag == "p" and attr == "class" and value == "good")
                                 paragraph_class = 0;
                             break;
                         case markup::scanner::TT_TAG_END:
                             if (tag == "p") {
-                                plaintext.push_back('\t');
-                                plaintext.append(std::to_string(paragraph_counter));
+                                if (paragraph_class == 0) {
+                                    plaintext.push_back('\t');
+                                    plaintext.append(std::to_string(paragraph_counter));
+                                    addNewLine(plaintext);
+                                }
                                 paragraph_counter += 1;
-                                addNewLine(plaintext);
                             }
                             break;
                         case markup::scanner::TT_WORD:
@@ -99,7 +100,7 @@ namespace prevertical2text {
                     }
                         // Look for the </doc> end tag and write the document data
                     else if (t == markup::scanner::TT_TAG_END and tag == "doc") {
-                        if (plaintext.back() != '\n') plaintext.push_back('\n');
+                        addNewLine(plaintext);
                         std::string base64text;
                         std::string base64html;
                         std::string textwithentities = plaintext;
