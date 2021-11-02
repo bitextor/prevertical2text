@@ -15,6 +15,7 @@ struct Options {
     std::vector<std::string> preverticals;
     std::string files;
     bool boilerplate{};
+    bool paragraph{};
     bool verbose{};
     bool silent{};
     std::string output;
@@ -29,6 +30,7 @@ void parseArgs(int argc, char *argv[], Options& out) {
         ("files,f", po::value(&out.files)->default_value("url,token"), "List of output files separated by commas. Default (mandatory files): 'url,text'. Optional: 'mime,html'")
         ("input,i", po::value(&out.preverticals)->multitoken(), "Input Spiderling prevertical file name(s)")
         ("remove_boilerplate,b", po::bool_switch(&out.boilerplate)->default_value(false), "Remove boilerplate paragraphs from prevertical format, tagged as 'bad'")
+        ("paragraph_info,p", po::bool_switch(&out.paragraph)->default_value(false), "Add paragraph index in each b64encoded document paragraph as tab separated column")
         ("verbose,v", po::bool_switch(&out.verbose)->default_value(false), "Verbosity level")
         ("silent,s", po::bool_switch(&out.silent)->default_value(false));
 
@@ -45,7 +47,8 @@ void parseArgs(int argc, char *argv[], Options& out) {
                 " -f <output_files>                List of output files separated by commas\n"
                 "                                  Default (mandatory): \"url,text\"\n"
                 "                                  Optional values: \"mime,html\"\n"
-		" -b                               Remove boilerplate paragraphs\n"
+                " -b                               Remove boilerplate paragraphs\n"
+                " -p                               Add paragraph index in each b64encoded document paragraph"
                 " -s                               Only output errors\n"
                 " -v                               Verbose output (print trace)\n\n";
         exit(1);
@@ -75,7 +78,7 @@ int main(int argc, char *argv[]) {
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     preverticalPreprocessor preverticalpproc(options.output, output_files);
     for (const std::string& file : options.preverticals){
-        preverticalpproc.process(file, options.boilerplate);
+        preverticalpproc.process(file, options.boilerplate, options.paragraph);
     }
     preverticalpproc.printStatistics();
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

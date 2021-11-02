@@ -23,7 +23,7 @@ namespace prevertical2text {
         preprocess::base64_encode(original, base64);
     }
 
-    void preverticalPreprocessor::process(const std::string& filename, bool boilerplate_removal) {
+    void preverticalPreprocessor::process(const std::string& filename, bool boilerplate_removal, bool paragraph_info) {
         std::string plaintext;
         std::string lang;
         std::string url;
@@ -67,8 +67,10 @@ namespace prevertical2text {
                         case markup::scanner::TT_TAG_END:
                             if (tag == "p") {
                                 if (paragraph_class == 0) {
-                                    plaintext.push_back('\t');
-                                    plaintext.append(std::to_string(paragraph_counter));
+                                    if (paragraph_info) {
+                                        plaintext.push_back('\t');
+                                        plaintext.append(std::to_string(paragraph_counter));
+                                    }
                                     addNewLine(plaintext);
                                 }
                                 paragraph_counter += 1;
