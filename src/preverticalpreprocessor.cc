@@ -120,7 +120,7 @@ namespace prevertical2text {
                         std::string textwithentities = plaintext;
                         std::string exact_payload;
                         exact_payload = payload.substr(0, payload.find("</doc>") + 6);
-			if (!(encoding_chared == "utf8" or encoding_chared == "utf-8" or encoding_chared == "ascii"))
+			if (!(encoding_chared == "utf8" or encoding_chared == "utf-8" or encoding_chared == "ascii" or encoding_chared == "None"))
                             textwithentities = toUTF8(textwithentities, encoding_chared);
                         entities::decodeEntities(textwithentities, plaintext);
                         encodeBase64(plaintext, base64text);
