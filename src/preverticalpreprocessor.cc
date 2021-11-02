@@ -1,6 +1,7 @@
 #include "preverticalpreprocessor.hh"
 #include "xh_scanner.hh"
 #include <boost/log/trivial.hpp>
+#include <boost/locale.hpp>
 #include <fstream>
 #include "preprocess/base64.hh"
 #include "entities.hh"
@@ -19,6 +20,14 @@ namespace prevertical2text {
         }
     }
 
+    std::string toUTF8(const std::string& text, const std::string& charset) {
+        return boost::locale::conv::to_utf<char>(text, charset);
+    }
+
+    std::string toUTF8(const char* text, const std::string& charset) {
+        return boost::locale::conv::to_utf<char>(text, charset);
+    }
+	
     void encodeBase64(const std::string& original, std::string& base64){
         preprocess::base64_encode(original, base64);
     }
@@ -28,6 +37,7 @@ namespace prevertical2text {
         std::string lang;
         std::string url;
         std::string mime;
+	std::string encoding_chared;
         int paragraph_class = 0;
 
         std::ifstream stream;
@@ -95,7 +105,9 @@ namespace prevertical2text {
                             url = value;
                         } else if (attr == "file_type") {
                             mime = value;
-                        }
+                        } else if (attr == "enc_chared") {
+			    encoding_chared = value;
+			}
                     }
                         // Look for the </doc> end tag and write the document data
                     else if (t == markup::scanner::TT_TAG_END and tag == "doc") {
@@ -105,6 +117,8 @@ namespace prevertical2text {
                         std::string textwithentities = plaintext;
                         std::string exact_payload;
                         exact_payload = payload.substr(0, payload.find("</doc>") + 6);
+			if (!(encoding_chared == "utf8" or encoding_chared == "utf-8" or encoding_chared == "ascii"))
+                            textwithentities = toUTF8(textwithentities, encoding_chared);
                         entities::decodeEntities(textwithentities, plaintext);
                         encodeBase64(plaintext, base64text);
                         encodeBase64(exact_payload, base64html);
