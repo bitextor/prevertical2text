@@ -2,6 +2,7 @@
 #include "xh_scanner.hh"
 #include <boost/log/trivial.hpp>
 #include <boost/locale.hpp>
+#include <boost/algorithm/string.hpp>
 #include <fstream>
 #include "preprocess/base64.hh"
 #include "entities.hh"
@@ -77,6 +78,7 @@ namespace prevertical2text {
                         case markup::scanner::TT_TAG_END:
                             if (tag == "p") {
                                 if (paragraph_class == 0) {
+                                    boost::replace_all(plaintext, "\r", " ");
                                     if (paragraph_info) {
                                         plaintext.push_back('\t');
                                         plaintext.append(std::to_string(paragraph_counter));
@@ -124,6 +126,8 @@ namespace prevertical2text {
                             if (!(encoding_chared == "utf8" or encoding_chared == "utf-8" or encoding_chared == "ascii" or encoding_chared == "None"))
                                 textwithentities = toUTF8(textwithentities, encoding_chared);
                             entities::decodeEntities(textwithentities, plaintext);
+                            boost::replace_all(plaintext, "\r\n", " ");
+                            boost::replace_all(plaintext, "\r", " ");
                             encodeBase64(plaintext, base64text);
                             encodeBase64(exact_payload, base64html);
                             writer.write(lang, base64text, url, mime, base64html);
