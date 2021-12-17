@@ -123,17 +123,19 @@ namespace prevertical2text {
                         if (!plaintext.empty()){
                             addNewLine(plaintext);
                             exact_payload = payload.substr(0, payload.find("</doc>") + 6);
-                            if (!(encoding_chared == "utf8" or encoding_chared == "utf-8" or encoding_chared == "ascii" or encoding_chared == "None"))
-                                textwithentities = toUTF8(textwithentities, encoding_chared);
-                            entities::decodeEntities(textwithentities, plaintext);
-                            boost::replace_all(plaintext, "\r\n", " ");
-                            boost::replace_all(plaintext, "\r", " ");
-                            encodeBase64(plaintext, base64text);
-                            encodeBase64(exact_payload, base64html);
-                            writer.write(lang, base64text, url, mime, base64html);
-                            ++textRecords;
-                            textBytes += plaintext.size();
-                            totalBytes += exact_payload.size();
+                            if (exact_payload.size() < 5242880){ // 5MB
+                                if (!(encoding_chared == "utf8" or encoding_chared == "utf-8" or encoding_chared == "ascii" or encoding_chared == "None"))
+                                    textwithentities = toUTF8(textwithentities, encoding_chared);
+                                entities::decodeEntities(textwithentities, plaintext);
+                                boost::replace_all(plaintext, "\r\n", " ");
+                                boost::replace_all(plaintext, "\r", " ");
+                                encodeBase64(plaintext, base64text);
+                                encodeBase64(exact_payload, base64html);
+                                writer.write(lang, base64text, url, mime, base64html);
+                                ++textRecords;
+                                textBytes += plaintext.size();
+                                totalBytes += exact_payload.size();
+                            }
                         }
                         plaintext = "";
                         payload = si.p;
