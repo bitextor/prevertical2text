@@ -48,7 +48,7 @@ namespace prevertical2text {
         std::string docxml;
 
         for (std::string line; getline(stream, line);) {
-            docxml += line;
+            docxml += line + "\n";
             if (line == "</doc>") {
                 markup::instream si(docxml.c_str());
                 markup::scanner sc(si);
@@ -79,6 +79,8 @@ namespace prevertical2text {
                             if (tag == "p") {
                                 if (paragraph_class == 0) {
                                     boost::replace_all(plaintext, "\r", " ");
+                                    if (std::isspace(plaintext.back()))
+                                        plaintext.pop_back();
                                     if (paragraph_info) {
                                         plaintext.push_back('\t');
                                         plaintext.append(std::to_string(paragraph_counter));
@@ -92,7 +94,7 @@ namespace prevertical2text {
                             if (paragraph_class == 0) plaintext.append(value);
                             break;
                         case markup::scanner::TT_SPACE:
-                            addSpace(plaintext);
+                            if (paragraph_class == 0) addSpace(plaintext);
                             break;
                         default:
                             break;
@@ -138,6 +140,7 @@ namespace prevertical2text {
                             }
                         }
                         plaintext = "";
+                        paragraph_class = 0;
                         payload = si.p;
                     }
                 }
