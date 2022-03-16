@@ -38,7 +38,11 @@ namespace prevertical2text {
         std::string lang;
         std::string url;
         std::string mime;
-	std::string encoding_chared;
+	    std::string encoding_chared;
+        std::string title;
+        std::string crawldate;
+        std::string cfclass;
+
         int paragraph_class = 0;
 
         std::ifstream stream;
@@ -70,6 +74,8 @@ namespace prevertical2text {
                             BOOST_LOG_TRIVIAL(trace) << "Prevertical document " << url << ": parsing error";
                             return;
                         case markup::scanner::TT_ATTR:
+                            if (tag == "p" and attr == "cfclass")
+                                cfclass = value;
                             if (boilerplate_removal and tag == "p" and attr == "class" and value == "bad")
                                 paragraph_class = 1;
                             else if (boilerplate_removal and tag == "p" and attr == "class" and value == "good")
@@ -84,6 +90,14 @@ namespace prevertical2text {
                                     if (paragraph_info) {
                                         plaintext.push_back('\t');
                                         plaintext.append(std::to_string(paragraph_counter));
+                                        plaintext.push_back('\t');
+                                        plaintext.append(title);
+                                        plaintext.push_back('\t');
+                                        plaintext.append(crawldate);
+                                        plaintext.push_back('\t');
+                                        plaintext.append(mime);
+                                        plaintext.push_back('\t');
+                                        plaintext.append(cfclass);
                                     }
                                     addNewLine(plaintext);
                                 }
@@ -113,8 +127,12 @@ namespace prevertical2text {
                         } else if (attr == "file_type") {
                             mime = value;
                         } else if (attr == "enc_chared") {
-			    encoding_chared = value;
-			}
+                            encoding_chared = value;
+                        } else if (attr == "title") {
+                            title = value;
+                        } else if (attr == "crawl_date"){
+                            crawldate = value;
+                        }
                     }
                         // Look for the </doc> end tag and write the document data
                     else if (t == markup::scanner::TT_TAG_END and tag == "doc") {
