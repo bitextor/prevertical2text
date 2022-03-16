@@ -102,6 +102,7 @@ namespace prevertical2text {
                                     addNewLine(plaintext);
                                 }
                                 paragraph_counter += 1;
+                                cfclass = "";
                             }
                             break;
                         case markup::scanner::TT_WORD:
