@@ -79,7 +79,7 @@ namespace prevertical2text {
                             if (tag == "p") {
                                 if (paragraph_class == 0) {
                                     boost::replace_all(plaintext, "\r", " ");
-                                    if (std::isspace(plaintext.back()))
+                                    if (std::isspace(plaintext.back()) && plaintext.back() != '\n')
                                         plaintext.pop_back();
                                     if (paragraph_info) {
                                         plaintext.push_back('\t');
