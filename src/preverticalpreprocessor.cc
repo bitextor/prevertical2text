@@ -34,17 +34,6 @@ namespace prevertical2text {
     }
 
     void preverticalPreprocessor::process(const std::string& filename, bool boilerplate_removal, bool paragraph_info) {
-        std::string plaintext;
-        std::string lang;
-        std::string url;
-        std::string mime;
-	    std::string encoding_chared;
-        std::string title;
-        std::string crawldate;
-        std::string cfclass;
-
-        int paragraph_class = 0;
-
         std::ifstream stream;
         if (filename == "-") stream = std::ifstream("/dev/stdin");
         else stream = std::ifstream(filename);
@@ -57,6 +46,17 @@ namespace prevertical2text {
                 markup::instream si(docxml.c_str());
                 markup::scanner sc(si);
                 std::string payload = si.p;
+
+                std::string plaintext;
+                std::string lang;
+                std::string url;
+                std::string mime;
+                std::string encoding_chared;
+                std::string title;
+                std::string crawldate;
+                std::string cfclass;
+
+                int paragraph_class = 0;
 
                 int t = markup::scanner::TT_SPACE; // just start somewhere that isn't ERROR or EOF
                 std::string tag;
@@ -157,9 +157,6 @@ namespace prevertical2text {
                                 totalBytes += exact_payload.size();
                             }
                         }
-                        plaintext = "";
-                        paragraph_class = 0;
-                        payload = si.p;
                     }
                 }
                 docxml = "";
