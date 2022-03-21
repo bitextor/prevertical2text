@@ -55,6 +55,7 @@ namespace prevertical2text {
                 std::string title;
                 std::string crawldate;
                 std::string cfclass;
+                std::string heading;
 
                 int paragraph_class = 0;
 
@@ -76,6 +77,8 @@ namespace prevertical2text {
                         case markup::scanner::TT_ATTR:
                             if (tag == "p" and attr == "cfclass")
                                 cfclass = value;
+                            else if (tag == "p" and attr == "heading")
+                                heading = value;
                             if (boilerplate_removal and tag == "p" and attr == "class" and value == "bad")
                                 paragraph_class = 1;
                             else if (boilerplate_removal and tag == "p" and attr == "class" and value == "good")
@@ -98,11 +101,14 @@ namespace prevertical2text {
                                         plaintext.append(mime);
                                         plaintext.push_back('\t');
                                         plaintext.append(cfclass);
+                                        plaintext.push_back('\t');
+                                        plaintext.append(heading);
                                     }
                                     addNewLine(plaintext);
                                 }
                                 paragraph_counter += 1;
                                 cfclass = "";
+                                heading = "";
                             }
                             break;
                         case markup::scanner::TT_WORD:
