@@ -151,8 +151,6 @@ namespace prevertical2text {
                             addNewLine(plaintext);
                             exact_payload = payload.substr(0, payload.find("</doc>") + 6);
                             if (exact_payload.size() < 5242880){ // 5MB
-                                if (!(encoding_chared == "utf8" or encoding_chared == "utf-8" or encoding_chared == "ascii" or encoding_chared == "None"))
-                                    textwithentities = toUTF8(textwithentities, encoding_chared);
                                 entities::decodeEntities(textwithentities, plaintext);
                                 boost::replace_all(plaintext, "\r\n", " ");
                                 boost::replace_all(plaintext, "\r", " ");
