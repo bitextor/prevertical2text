@@ -56,6 +56,7 @@ namespace prevertical2text {
                 std::string crawldate;
                 std::string cfclass;
                 std::string heading;
+		heading = "no";
 
                 int paragraph_class = 0;
 
@@ -108,7 +109,7 @@ namespace prevertical2text {
                                 }
                                 paragraph_counter += 1;
                                 cfclass = "";
-                                heading = "";
+                                heading = "no";
                             }
                             break;
                         case markup::scanner::TT_WORD:
