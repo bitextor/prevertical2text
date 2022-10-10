@@ -93,7 +93,8 @@ namespace prevertical2text {
                                         plaintext.pop_back();
                                     if (paragraph_info) {
                                         plaintext.push_back('\t');
-                                        plaintext.append(std::to_string(paragraph_counter));
+                                        plaintext.append(std::to_string(paragraph_counter + 1));
+                                        plaintext.append(":LONGLONGPLACEHOLDERFORTOTALPARAGRAPHSINDOCUMENT");
                                         plaintext.push_back('\t');
                                         plaintext.append(title);
                                         plaintext.push_back('\t');
@@ -155,6 +156,8 @@ namespace prevertical2text {
                                 entities::decodeEntities(textwithentities, plaintext);
                                 boost::replace_all(plaintext, "\r\n", " ");
                                 boost::replace_all(plaintext, "\r", " ");
+                                if (paragraph_info)
+                                    boost::replace_all(plaintext, "LONGLONGPLACEHOLDERFORTOTALPARAGRAPHSINDOCUMENT", std::to_string(paragraph_counter));
                                 encodeBase64(plaintext, base64text);
                                 encodeBase64(exact_payload, base64html);
                                 writer.write(lang, base64text, url, mime, base64html);
