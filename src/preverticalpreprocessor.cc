@@ -28,12 +28,12 @@ namespace prevertical2text {
     std::string toUTF8(const char* text, const std::string& charset) {
         return boost::locale::conv::to_utf<char>(text, charset);
     }
-	
+
     void encodeBase64(const std::string& original, std::string& base64){
         preprocess::base64_encode(original, base64);
     }
 
-    void preverticalPreprocessor::process(const std::string& filename, bool boilerplate_removal, bool paragraph_info) {
+    void preverticalPreprocessor::process(const std::string& filename, bool boilerplate_removal, bool paragraph_info, bool cld2) {
         std::ifstream stream;
         if (filename == "-") stream = std::ifstream("/dev/stdin");
         else stream = std::ifstream(filename);
@@ -49,6 +49,7 @@ namespace prevertical2text {
 
                 std::string plaintext;
                 std::string lang;
+                std::string cld2lang;
                 std::string url;
                 std::string mime;
                 std::string encoding_chared;
@@ -56,7 +57,7 @@ namespace prevertical2text {
                 std::string crawldate;
                 std::string cfclass;
                 std::string heading;
-		heading = "no";
+                heading = "no";
 
                 int paragraph_class = 0;
 
@@ -64,7 +65,7 @@ namespace prevertical2text {
                 std::string tag;
                 std::string attr;
                 std::string value;
-                int paragraph_counter;
+                int paragraph_counter = 0;
 
                 while (t != markup::scanner::TT_EOF) {
                     t = sc.get_token();
@@ -131,6 +132,8 @@ namespace prevertical2text {
                     else if (t == markup::scanner::TT_ATTR and tag == "doc") {
                         if (attr == "lang") {
                             lang = value;
+                        } else if (attr == "cld_lang") {
+                            cld2lang = value;
                         } else if (attr == "url") {
                             url = value;
                         } else if (attr == "file_type") {
@@ -160,7 +163,10 @@ namespace prevertical2text {
                                     boost::replace_all(plaintext, "LONGLONGPLACEHOLDERFORTOTALPARAGRAPHSINDOCUMENT", std::to_string(paragraph_counter));
                                 encodeBase64(plaintext, base64text);
                                 encodeBase64(exact_payload, base64html);
-                                writer.write(lang, base64text, url, mime, base64html);
+                                if (cld2 == true and !cld2lang.empty())
+                                    writer.write(cld2lang, base64text, url, mime, base64html);
+                                else
+                                    writer.write(lang, base64text, url, mime, base64html);
                                 ++textRecords;
                                 textBytes += plaintext.size();
                                 totalBytes += exact_payload.size();

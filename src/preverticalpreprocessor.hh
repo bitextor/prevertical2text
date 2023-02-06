@@ -16,7 +16,7 @@ namespace prevertical2text {
 
         public:
             explicit preverticalPreprocessor(const std::string& outputFolder, const std::unordered_set<std::string>& output_files = {});
-            void process(const std::string& filename, bool boilerplate_removal, bool paragraph_info);
+            void process(const std::string& filename, bool boilerplate_removal, bool paragraph_info, bool cld2);
             void printStatistics() const;
     };
 }

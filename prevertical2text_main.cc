@@ -17,6 +17,7 @@ struct Options {
     std::string files;
     bool boilerplate{};
     bool paragraph{};
+    bool cld2{};
     bool verbose{};
     bool silent{};
     std::string output;
@@ -32,6 +33,7 @@ void parseArgs(int argc, char *argv[], Options& out) {
         ("input,i", po::value(&out.preverticals)->multitoken(), "Input Spiderling prevertical file name(s)")
         ("remove_boilerplate,b", po::bool_switch(&out.boilerplate)->default_value(false), "Remove boilerplate paragraphs from prevertical format, tagged as 'bad'")
         ("paragraph_info,p", po::bool_switch(&out.paragraph)->default_value(false), "Add paragraph index in each b64encoded document paragraph as tab separated column")
+        ("cld2,c", po::bool_switch(&out.cld2)->default_value(false), "Use CLD2 detected language attribute instead of trigram model marked on prevertical documents")
         ("verbose,v", po::bool_switch(&out.verbose)->default_value(false), "Verbosity level")
         ("silent,s", po::bool_switch(&out.silent)->default_value(false));
 
@@ -41,7 +43,7 @@ void parseArgs(int argc, char *argv[], Options& out) {
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).positional(pd).run(), vm);
     if (argc == 1 || vm["help"].as<bool>()) {
-        std::cerr << "Usage: " << argv[0] << " -o <output_folder> [ -f <output_files> ] [ --url-filters <filters_file> ] [ --encode-urls ] [ -s ] [ -v ] <prevertical_file>...\n"
+        std::cerr << "Usage: " << argv[0] << " -o <output_folder> [ -f <output_files> ] [ -b ] [ -p ] [ -c ] [ -s ] [ -v ] <prevertical_file>...\n"
                 "\n"
                 "Options:\n"
                 " -o <output_folder>               Output folder, required\n"
@@ -50,6 +52,7 @@ void parseArgs(int argc, char *argv[], Options& out) {
                 "                                  Optional values: \"mime,html\"\n"
                 " -b                               Remove boilerplate paragraphs\n"
                 " -p                               Add paragraph index in each b64encoded document paragraph\n"
+                " -c                               Use CLD2 detected language attribute instead of trigram model marked on prevertical documents"
                 " -s                               Only output errors\n"
                 " -v                               Verbose output (print trace)\n\n";
         exit(1);
@@ -79,7 +82,7 @@ int main(int argc, char *argv[]) {
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     preverticalPreprocessor preverticalpproc(options.output, output_files);
     for (const std::string& file : options.preverticals){
-        preverticalpproc.process(file, options.boilerplate, options.paragraph);
+        preverticalpproc.process(file, options.boilerplate, options.paragraph, options.cld2);
     }
     preverticalpproc.printStatistics();
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
