@@ -52,7 +52,7 @@ void parseArgs(int argc, char *argv[], Options& out) {
                 "                                  Optional values: \"mime,html\"\n"
                 " -b                               Remove boilerplate paragraphs\n"
                 " -p                               Add paragraph index in each b64encoded document paragraph\n"
-                " -c                               Use CLD2 detected language attribute instead of trigram model marked on prevertical documents"
+                " -c                               Use CLD2 detected language attribute instead of trigram model marked on prevertical documents\n"
                 " -s                               Only output errors\n"
                 " -v                               Verbose output (print trace)\n\n";
         exit(1);
