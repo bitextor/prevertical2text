@@ -6,6 +6,8 @@
 #include <fstream>
 #include "preprocess/base64.hh"
 #include "entities.hh"
+#include <map>
+
 
 namespace prevertical2text {
     void addSpace(std::string& plaintext) {
@@ -48,6 +50,8 @@ namespace prevertical2text {
                 std::string payload = si.p;
 
                 std::string plaintext;
+                std::map<std::string, std::string> plaintext_languages;
+
                 std::string lang;
                 std::string cld2lang;
                 std::string url;
@@ -66,6 +70,7 @@ namespace prevertical2text {
                 std::string attr;
                 std::string value;
                 int paragraph_counter = 0;
+                std::string p_cld2lang; // language detected in paragraph 
 
                 while (t != markup::scanner::TT_EOF) {
                     t = sc.get_token();
@@ -85,10 +90,24 @@ namespace prevertical2text {
                                 paragraph_class = 1;
                             else if (boilerplate_removal and tag == "p" and attr == "class" and value == "good")
                                 paragraph_class = 0;
+                            if (tag == "p" and attr == "cld_lang"){ // language identified by paragraph
+                                if (value != "")
+                                    p_cld2lang = value;
+                                else
+                                    p_cld2lang = cld2lang;
+                            }
+                               
                             break;
                         case markup::scanner::TT_TAG_END:
                             if (tag == "p") {
                                 if (paragraph_class == 0) {
+                                    std::string lang_plaintext;
+                                    auto it = plaintext_languages.find(p_cld2lang);
+                                    if (it != plaintext_languages.end())
+                                        lang_plaintext = it->second; // if lang exist, get the current content
+                                    else
+                                        plaintext_languages.insert(std::make_pair(p_cld2lang, "")); // if not, add new lang
+
                                     boost::replace_all(plaintext, "\r", " ");
                                     if (std::isspace(plaintext.back()) && plaintext.back() != '\n')
                                         plaintext.pop_back();
@@ -108,6 +127,12 @@ namespace prevertical2text {
                                         plaintext.append(heading);
                                     }
                                     addNewLine(plaintext);
+
+                                    lang_plaintext += plaintext;
+
+                                    plaintext_languages[p_cld2lang] = lang_plaintext; // update map content
+
+                                    plaintext = "";
                                 }
                                 paragraph_counter += 1;
                                 cfclass = "";
@@ -148,29 +173,35 @@ namespace prevertical2text {
                     }
                         // Look for the </doc> end tag and write the document data
                     else if (t == markup::scanner::TT_TAG_END and tag == "doc") {
-                        std::string base64text;
-                        std::string base64html;
-                        std::string textwithentities = plaintext;
-                        std::string exact_payload;
-                        if (!plaintext.empty()){
-                            addNewLine(plaintext);
-                            exact_payload = payload.substr(0, payload.find("</doc>") + 6);
-                            if (exact_payload.size() < 5242880){ // 5MB
-                                entities::decodeEntities(textwithentities, plaintext);
-                                boost::replace_all(plaintext, "\r\n", " ");
-                                boost::replace_all(plaintext, "\r", " ");
-                                if (paragraph_info)
-                                    boost::replace_all(plaintext, "LONGLONGPLACEHOLDERFORTOTALPARAGRAPHSINDOCUMENT", std::to_string(paragraph_counter));
-                                encodeBase64(plaintext, base64text);
-                                encodeBase64(exact_payload, base64html);
-                                if (cld2 == true and !cld2lang.empty())
-                                    writer.write(cld2lang, base64text, url, mime, base64html);
-                                else
-                                    writer.write(lang, base64text, url, mime, base64html);
-                                ++textRecords;
-                                textBytes += plaintext.size();
-                                totalBytes += exact_payload.size();
+                        for (auto it = plaintext_languages.begin(); it != plaintext_languages.end(); ++it) {
+                            std::string paragraphs_lang = it->first;
+                            std::string lang_plaintext = it->second;
+
+                            std::string base64text;
+                            std::string base64html;
+                            std::string textwithentities = lang_plaintext;
+                            std::string exact_payload;
+                            if (!lang_plaintext.empty()){
+                                addNewLine(lang_plaintext);
+                                exact_payload = payload.substr(0, payload.find("</doc>") + 6);
+                                if (exact_payload.size() < 5242880){ // 5MB
+                                    entities::decodeEntities(textwithentities, lang_plaintext);
+                                    boost::replace_all(lang_plaintext, "\r\n", " ");
+                                    boost::replace_all(lang_plaintext, "\r", " ");
+                                    if (paragraph_info)
+                                        boost::replace_all(lang_plaintext, "LONGLONGPLACEHOLDERFORTOTALPARAGRAPHSINDOCUMENT", std::to_string(paragraph_counter));
+                                    encodeBase64(lang_plaintext, base64text);
+                                    encodeBase64(exact_payload, base64html);
+                                    if (cld2 == true and !paragraphs_lang.empty())
+                                        writer.write(paragraphs_lang, base64text, url, mime, base64html);
+                                    else
+                                        writer.write(lang, base64text, url, mime, base64html);
+                                    ++textRecords;
+                                    textBytes += plaintext.size();
+                                    totalBytes += exact_payload.size();
+                                }
                             }
+                            
                         }
                     }
                 }
