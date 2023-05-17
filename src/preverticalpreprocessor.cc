@@ -95,6 +95,8 @@ namespace prevertical2text {
                                     p_cld2lang = value;
                                 else
                                     p_cld2lang = cld2lang;
+                                if (cld2 == false) // Trigram language detection
+                                    p_cld2lang = lang;
                             }
                                
                             break;
@@ -194,7 +196,7 @@ namespace prevertical2text {
                                     encodeBase64(exact_payload, base64html);
                                     if (cld2 == true and !paragraphs_lang.empty())
                                         writer.write(paragraphs_lang, base64text, url, mime, base64html);
-                                    else
+                                    else if (cld2 == false)
                                         writer.write(lang, base64text, url, mime, base64html);
                                     ++textRecords;
                                     textBytes += plaintext.size();
